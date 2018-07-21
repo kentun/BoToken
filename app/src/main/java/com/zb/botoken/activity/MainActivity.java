@@ -1,6 +1,7 @@
 package com.zb.botoken.activity;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,11 +21,12 @@ import android.widget.Toast;
 
 import com.zb.botoken.R;
 import com.zb.botoken.adapter.CurrencyAdapter;
+import com.zb.botoken.adapter.WalletAdapter;
+import com.zb.botoken.model.ETHWallet;
 import com.zb.botoken.util.LogUtil;
-import com.zb.botoken.util.WalletUtil;
 import com.zb.botoken.model.Currency;
+import com.zb.botoken.util.Web3jUtil;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -37,11 +39,15 @@ public class MainActivity extends BaseActivity {
 
     private List<Currency> currencyList = new ArrayList<>();
 
+    private List<ETHWallet> walletList = new ArrayList<>();
+
     private DrawerLayout drawerLayout;
 
     CollapsingToolbarLayout collapsingToolbarLayout;
 
-    RecyclerView recyclerView;
+    RecyclerView recyclerViewCurrency;
+
+    RecyclerView recyclerViewWallet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,19 +59,41 @@ public class MainActivity extends BaseActivity {
         collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        recyclerView = findViewById(R.id.recycler_currency);
+        recyclerViewCurrency = findViewById(R.id.recycler_currency);
+        View view = navigationView.getHeaderView(0);
+        recyclerViewWallet = view.findViewById(R.id.recycler_wallet);
 
+        //币种类Recycler
         //RecyclerView操作
         StaggeredGridLayoutManager layoutManager = new
-                StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(layoutManager);
+                StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
+        recyclerViewCurrency.setLayoutManager(layoutManager);
+        recyclerViewCurrency.setNestedScrollingEnabled(false);
         //初始化数据
-        Currency currencyETH = new Currency("ETH", "2.0012");
-        currencyList.add(currencyETH);
         Currency currencyBTC = new Currency("BTC", "1.0006");
         currencyList.add(currencyBTC);
         CurrencyAdapter adapter = new CurrencyAdapter(currencyList);
-        recyclerView.setAdapter(adapter);
+        recyclerViewCurrency.setAdapter(adapter);
+
+        //钱包Recycler
+        //RecyclerView操作
+        StaggeredGridLayoutManager layoutManager2 = new
+                StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
+        recyclerViewWallet.setLayoutManager(layoutManager2);
+        recyclerViewWallet.setNestedScrollingEnabled(false);
+        //初始化数据
+        ETHWallet wallet1 = new ETHWallet("钱包一",R.drawable.head_rabbit);
+        walletList.add(wallet1);
+        ETHWallet wallet2 = new ETHWallet("钱包二",R.drawable.head_tigger);
+        walletList.add(wallet2);
+        ETHWallet wallet3 = new ETHWallet("钱包三",R.drawable.head_cattle);
+        walletList.add(wallet3);
+        /*walletList.add(wallet1);
+        walletList.add(wallet1);
+        walletList.add(wallet1);*/
+        WalletAdapter.setDrawerLayout(drawerLayout);
+        WalletAdapter adapter2 = new WalletAdapter(walletList);
+        recyclerViewWallet.setAdapter(adapter2);
 
         //Toobar代替actionbar
         setSupportActionBar(toolbar);
@@ -100,7 +128,8 @@ public class MainActivity extends BaseActivity {
                         Toast.makeText(MainActivity.this, "扫一扫", Toast.LENGTH_SHORT).show();
                         break;
                     case R.id.nav_wallet:
-                        Toast.makeText(MainActivity.this, "创建钱包", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(MainActivity.this, NewWalletActivity.class);
+                        startActivity(intent);
                         break;
                     case R.id.nav_import:
                         Toast.makeText(MainActivity.this, "导入钱包", Toast.LENGTH_SHORT).show();
@@ -135,10 +164,10 @@ public class MainActivity extends BaseActivity {
             String ethBalance = msg.getData().getString("ethBalance");
             if (ethBalance != null && ethBalance != ""){
                 collapsingToolbarLayout.setTitle("ETH：" + ethBalance);
-                /*Currency currencyETH = new Currency("ETH", ethBalance);
+                Currency currencyETH = new Currency("ETH", ethBalance);
                 currencyList.add(currencyETH);
                 CurrencyAdapter adapter = new CurrencyAdapter(currencyList);
-                recyclerView.setAdapter(adapter);*/
+                recyclerViewCurrency.setAdapter(adapter);
             }
         }
     };
@@ -150,7 +179,7 @@ public class MainActivity extends BaseActivity {
             Message msg = new Message();
             Bundle data = new Bundle();
             try {
-                String ethBalance = WalletUtil.getBalance(address);
+                String ethBalance = Web3jUtil.getBalance(address);
                 data.putString("ethBalance", ethBalance);
                 LogUtil.i(TAG, ethBalance);
             } catch (ExecutionException e) {

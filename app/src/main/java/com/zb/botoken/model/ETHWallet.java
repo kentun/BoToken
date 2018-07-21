@@ -13,6 +13,12 @@ public class ETHWallet {
     private String mnemonic;
     private boolean isCurrent;
     private boolean isBackup;
+    private int imageId;
+
+    public ETHWallet(String walletName, int walletImageId) {
+        this.name = walletName;
+        this.imageId = walletImageId;
+    }
 
     public ETHWallet(Long id, String address, String name, String password,
                      String keystorePath, String mnemonic, boolean isCurrent,
@@ -92,6 +98,14 @@ public class ETHWallet {
 
     public void setBackup(boolean backup) {
         isBackup = backup;
+    }
+
+    public int getImageId() {
+        return imageId;
+    }
+
+    public void setImageId(int imageId) {
+        this.imageId = imageId;
     }
 
     @Override
