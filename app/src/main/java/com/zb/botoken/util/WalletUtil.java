@@ -26,6 +26,9 @@ import java.security.SecureRandom;
 import java.util.List;
 import static org.web3j.crypto.WalletUtils.generateWalletFile;
 
+/**
+ * 钱包工具类
+ */
 public class WalletUtil{
 
 
@@ -45,11 +48,12 @@ public class WalletUtil{
             throws CipherException, IOException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         ETHWallet ethWallet = new ETHWallet();
 
-        DeterministicSeed deterministicSeed = WalletUtil.getDeterministicSeed(password);
+        DeterministicSeed deterministicSeed = WalletUtil.getDeterministicSeed();
         String mnemonic = String.join(" ", deterministicSeed.getMnemonicCode());
         Credentials credentials = WalletUtil.getWalletBySeed(deterministicSeed, password, destinationDirectory);
         String path = getKeyStoreByCredentials(credentials, password, destinationDirectory);
 
+        ethWallet.setId(UUIDUtils.getUUID());
         ethWallet.setName(name);
         ethWallet.setMnemonic(mnemonic);
         ethWallet.setAddress(credentials.getAddress());
@@ -64,13 +68,12 @@ public class WalletUtil{
 
     /**
      * 生成助记词
-     * @param password
      * @return
      */
-    public static DeterministicSeed getDeterministicSeed(String password){
+    public static DeterministicSeed getDeterministicSeed(){
         SecureRandom secureRandom = new SecureRandom();
         long creationTimeSeconds = System.currentTimeMillis() / 1000;
-        DeterministicSeed deterministicSeed = new DeterministicSeed(secureRandom, 128, password, creationTimeSeconds);
+        DeterministicSeed deterministicSeed = new DeterministicSeed(secureRandom, 128, "", creationTimeSeconds);
         return deterministicSeed;
     }
 
